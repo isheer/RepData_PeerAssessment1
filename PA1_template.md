@@ -1,9 +1,4 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 This report is submitted to satisfy the Peer Assessment 1 requirement of the
 Coursera Reproducible Research Course.
@@ -18,7 +13,8 @@ individual during the months of October and November of 2012.
 First we load the data taking care to first uncompress the zip archive and to 
 convert the date column from levels to Dates.
 
-```{r}
+
+```r
 activity <- read.csv(unz("activity.zip", "activity.csv"))
 activity$date <- as.Date(activity$date)
 ```
@@ -29,26 +25,55 @@ activity$date <- as.Date(activity$date)
 Grouping the data by date and computing the total steps per day we observe the 
 following distribution of total daily steps.
 
-```{r}
+
+```r
 library(dplyr)
+```
+
+```
+## 
+## Attaching package: 'dplyr'
+## 
+## The following object is masked from 'package:stats':
+## 
+##     filter
+## 
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
+```
+
+```r
 daily <- activity %>% 
          group_by(date) %>% 
          summarize(steps=sum(steps, na.rm=TRUE))
 hist(daily$steps, main="Total Steps", xlab="daily steps")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-2-1.png) 
+
 In addition, we compute the mean number of steps taken per day:
 
-```{r}
+
+```r
 ave <- mean(daily$steps, na.rm=TRUE)
 ave
 ```
 
+```
+## [1] 9354.23
+```
+
 and the median:
 
-```{r}
+
+```r
 med <- median(daily$steps, na.rm=TRUE)
 med
+```
+
+```
+## [1] 10395
 ```
 
 Note that for this analysis we have simply ignored missing data.
@@ -57,7 +82,8 @@ Note that for this analysis we have simply ignored missing data.
 
 If we look at the data averaged over the day we find the following distribution.
 
-```{r}
+
+```r
 interval <- activity %>% 
             group_by(interval) %>% 
             summarize(ave.steps=mean(steps, na.rm=TRUE))
@@ -67,31 +93,49 @@ with(interval, {plot(interval, ave.steps, type="l",
                 })
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png) 
+
 The interval with the maximum number of steps is given by:
 
-```{r}
+
+```r
 interval$interval[which.max(interval$ave.steps)]
+```
+
+```
+## [1] 835
 ```
 
 ## Imputing missing values
 
 The number of missing values in the data set is
 
-```{r}
+
+```r
 miss <- sum(is.na(activity$steps))
 miss
 ```
 
+```
+## [1] 2304
+```
+
 This represents a significant fraction of the original data set.
 
-```{r}
+
+```r
 miss / dim(activity)[1]
+```
+
+```
+## [1] 0.1311475
 ```
 
 We now create a new data set were we replace missing values with the mean 
 value measured for the corresponding interval.
 
-```{r}
+
+```r
 # this could probably have been done more elegantly...
 nactivity <- activity
 for (i in 1:length(nactivity$steps)) {
@@ -106,34 +150,59 @@ for (i in 1:length(nactivity$steps)) {
 Repeating the total daily step analysis we did earlier with the new dataset we 
 get the following distribution for the total number of daily steps:
 
-```{r}
+
+```r
 ndaily <- nactivity %>% 
           group_by(date) %>% 
           summarize(steps=sum(steps, na.rm=TRUE))
 hist(ndaily$steps, main="Total Steps", xlab="daily steps")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-10-1.png) 
+
 Imputing missing data has a significant impact on the distribution
 of total daily steps, especially in the bins representing fewer steps.
 
 As before, we compute the mean number of steps taken per day:
 
-```{r}
+
+```r
 nave <- mean(ndaily$steps, na.rm=TRUE)
 nave
 ```
 
+```
+## [1] 10765.64
+```
+
 and the median:
 
-```{r}
+
+```r
 nmed <- median(ndaily$steps, na.rm=TRUE)
 nmed
 ```
 
+```
+## [1] 10762
+```
+
 The change in mean and median of the total number of steps is respectively:
-```{r}
+
+```r
 nave-ave
+```
+
+```
+## [1] 1411.41
+```
+
+```r
 nmed-med
+```
+
+```
+## [1] 367
 ```
 
 ## Are there differences in activity patterns between weekdays and weekends?
@@ -142,7 +211,8 @@ Using the original dataset to avoid any contamination that might have been
 introduced by imputed data we contrast activity patterns between weekdays and 
 weekends.
 
-```{r}
+
+```r
 activity$weekday <- !(weekdays(activity$date) %in% c("Saturday", "Sunday"))
 weekday.interval <- activity %>% 
                     filter(weekday) %>%
@@ -160,6 +230,8 @@ qplot(interval, ave.steps, data=data, geom=c("line"),
       xlab="Interval", ylab="Number of Steps") +
     facet_wrap(~ weekday, nrow=2, ncol=1)
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-14-1.png) 
 
 We see very different patterns of activity.
 On weekdays the distribution is shifted earlier in the day.
